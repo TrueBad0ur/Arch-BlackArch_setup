@@ -1,0 +1,265 @@
+Installing arch linux
+
+ ___________________
+| Disk partitioning |
+ -------------------
+
+fdisk -l
+
+# here we'll see all available disk, out current disk has already been separated into 3 parts
+# we should write our system on it (formatting)
+
+fdisk /dev/sda
+
+# For example we'll take 100 Gb disk, parts will be: 1) root - 20Gb 2) swap-area - 2Gb 3) home - 78Gb
+
+1-st partition: root
+o
+n
+enter
+enter
+enter
++20G
+Yes
+a    (set boot flag)
+
+
+
+2-nd partition: swap-area (if there isn't enough memory left and no swap-partition, linux will kill processes)
+n
+enter
+enter
+enter
++2G
+type 
+enter
+82 
+
+3-rd partition:
+n
+enter
+enter
+enter
+enter
+w
+
+ ____________________________________________________________________
+| Format the partition with the ext4 file system using the mkfs.ext4 |
+ --------------------------------------------------------------------
+
+mkfs.ext4 /dev/sda1
+mkfs.ext4 /dev/sda3
+
+| Net connection (wired)----
+
+systemctl enable dhcpcd.service
+systemctl start dhcpcd.service
+
+ ________________________
+| Net connection (wi-fi) |
+ ------------------------
+
+cp /etc/netctl/examples/wireless-wpa /etc/netctl/NAMEOFYOURNETWORK
+nano /etc/netctl/NAMEOFYOURNETWORK
+netctl start NAMEOFYOURNETWORK
+
+ __________
+| Mounting |
+ ----------
+
+mount /dev/sda1 /mnt
+mkdir /mnt/home 
+mount /dev/sda3 /mnt/home
+mount
+
+----------------
+
+# genfstab will later detect mounted file systems and swap space
+# Use the pacstrap script to install the base package group
+
+pacstrap -i /mnt base
+genfstab -U -p /mnt >> /mnt/etc/fstab
+
+ _________________________________
+| Change root into the new system |
+ ---------------------------------
+
+arch-chroot /mnt
+
+ __________
+| Packages |
+ ----------
+
+pacman -S grub-bios linux-headers linux-lts linux-lts-headers wpa_supplicant wireless_tools
+
+ ____________________________
+| Time zone and Localization |
+ ----------------------------
+
+nano /etc/locale.gen
+ln -s /usr/share/zoneinfo/America/Detroit /etc/localtime
+echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen en_US.UTF-8
+hwclock —s -u
+
+ _______________
+| Root password |
+ ---------------
+
+passwd
+
+ ______
+| GRUB |
+ ------
+# https://serverfault.com/questions/857255/what-is-grub-install-actually-doing
+
+grub-install —-target=i386-pc -—recheck /dev/sda
+cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+grub-mkconfig -o /boot/grub/grub.cfg
+
+exit
+
+umount /mnt/home
+umount /mnt
+
+reboot
+ __________
+| Add User |
+ ----------
+user:
+	useradd --create-home truebad0ur
+	passwd truebad0ur
+	usermod -aG wheel truebad0ur
+add user to /etc/sudoers
+
+		LOGIN TO USER'S ACCOUNT
+
+pacman -S sudo
+sudo pacman -S xorg-server xorg-xinit xorg-apps mesa
+sudo pacman -S xf86-video-vesa
+sido pasman -S alsa-lib alsa-utils alsa-oss alsa-plugins
+sudo pacman -S ttf-droid ttf-dejavu ttf-liberation
+sudo pacman -S --needed base-devel git wget yajl
+
+git clone https://aur.archlinux.org/package-query.git
+cd packa…
+makepkg -si
+
+git clone https://aur.archlinux.org/yaourt.git
+cd packa…
+makepkg -si
+
+yaourt -S archey3
+
+nano .bashrc  (add) archey3 (optional)
+sudo pacman -S slim
+sudo systemctl enable slim.service
+
+  _________________________
+ | Awesome WM installation |
+  -------------------------
+
+sudo pacman -S awesome
+cp /etc/X11/xinit/xinitrc ~/.xinitrc
+
+nano .xinitrc
+# comment all except of XINIT.D
+(add to the end of the file) exec awesome
+(add to the end of the file) xrdb ~/.Xresources &
+mkdir -p .config/awesome
+
+cp /etc/xdg/awesome/rc.lua ~/.config/awesome
+cp -r /usr/share/awesome/* .config/awesome
+
+sudo pacman -S rxvt-unicode pcmanfm
+pacman -S zlib
+pacman -Sy xorg
+
+REBOOT
+
+In awesome:
+turn of wm mode (ctrl/alt + F1/F2/F3/F4/F5)
+
+# in console:
+	pacman -Sy xterm
+	pacman -S terminator (optional)
+sudo pacman -S ttf-dejavu ttf-liberation noto-fonts
+sudo pacman -S dolphin (optional)
+sudo pacman -S exfat-utils fuse-exfat (optional)
+
+# in /etc/environment should be n_US.UTF-8
+
+ _____________
+| Virtual Box |
+ -------------
+
+sudo pacman -S virtualbox
+sudo modprobe -a vboxdrv
+sudo echo vboxdrv > /etc/modules-load.d/virtualbox.conf
+sudo gpasswd -a $USER vboxusers
+
+ _______
+| Audio |
+ -------
+
+pacman -S pulseaudio 
+pacman -S pulseaudio-alsa 
+
+pulseaudio --start 
+pavucontrol
+
+
+blackarch: (optional)
+
+sudo pacman -Syyu
+curl -O https://blackarch.org/strap.sh > strap.sh
+sha1sum strap.sh
+sudo chmod a+x strap.sh
+sudo ./strap.sh
+sudo pacman -Sgg | grep blackarch | cut -d' ' -f2 | sort -u
+$ sudo pacman -S blackarch
+
+1 program - sudo pacman -S pdfcrack
+sudo pacman -Sg | grep blackarch
+pack of programs - sudo pacman -S blackarch-cracker
+https://www.ostechnix.com/install-blackarch-linux-arch-linux/
+
+ _____________________
+| Some useful scripts |
+ ---------------------
+
+# Unmount usb
+
+ unm_usb() { name=$1;
+             sudo umount /dev/disk/by-label/$name;
+}
+
+# New wifi
+
+setup-wifi () { name=$1;
+        sudo cp /etc/netctl/examples/wireless-wpa /etc/netctl/$name;
+        sudo nano /etc/netctl/$name;
+        netctl start $name ;
+}
+
+# lock screen (laptop)
+
+alias lock='i3lock -i ~/Images/arb.png'								1-st option
+alias lock='i3lock --no-unlock-indicator -i ~/Photos/arbeit.png'	2-nd
+
+# lock screen and sleep (pc)
+
+alias locker='lock & systemctl suspend'
+
+# Show available wifi's
+
+sudo iwlist wlp3s0 scan | grep ESSID
+
+# Already known wifi connection
+
+alias orex='sudo netctl NAMEOFYOURNETWORK'
+
+# Info about system
+
+archey3
