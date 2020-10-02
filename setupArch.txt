@@ -155,6 +155,9 @@ yaourt -S archey3
 nano .bashrc  (add) archey3 (optional)
 sudo pacman -S slim
 sudo systemctl enable slim.service
+mv background.jpg /usr/share/slim/themes/default/
+mv panel.png /usr/share/slim/themes/default/
+mv slim.theme /usr/share/slim/themes/default/
 
   _________________________
  | Awesome WM installation |
