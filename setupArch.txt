@@ -2,11 +2,11 @@ Installing arch linux
 
  ___________________
 | Disk partitioning |
- -------------------
+|___________________|
 
 fdisk -l
 
-# here we'll see all available disk, out current disk has already been separated into 3 parts
+# here we'll see all available disks, our current disk has already been separated into 3 parts
 # we should write our system on it (formatting)
 
 fdisk /dev/sda
@@ -45,27 +45,29 @@ w
 
  ____________________________________________________________________
 | Format the partition with the ext4 file system using the mkfs.ext4 |
- --------------------------------------------------------------------
+|____________________________________________________________________|
 
 mkfs.ext4 /dev/sda1
 mkfs.ext4 /dev/sda3
 
-| Net connection (wired)----
+ ________________________
+| Net connection (wired) |
+|________________________|
 
 systemctl enable dhcpcd.service
 systemctl start dhcpcd.service
 
  ________________________
 | Net connection (wi-fi) |
- ------------------------
+|________________________|
 
-cp /etc/netctl/examples/wireless-wpa /etc/netctl/NAMEOFYOURNETWORK
+cp /netctl/examples/wireless-wpa /etc/netctl/NAMEOFYOURNETWORK
 nano /etc/netctl/NAMEOFYOURNETWORK
 netctl start NAMEOFYOURNETWORK
 
  __________
 | Mounting |
- ----------
+|__________|
 
 mount /dev/sda1 /mnt
 mkdir /mnt/home 
@@ -82,19 +84,19 @@ genfstab -U -p /mnt >> /mnt/etc/fstab
 
  _________________________________
 | Change root into the new system |
- ---------------------------------
+|_________________________________|
 
 arch-chroot /mnt
 
  __________
 | Packages |
- ----------
+|__________|
 
 pacman -S grub-bios linux-headers linux-lts linux-lts-headers wpa_supplicant wireless_tools
 
  ____________________________
 | Time zone and Localization |
- ----------------------------
+|____________________________|
 
 nano /etc/locale.gen
 ln -s /usr/share/zoneinfo/America/Detroit /etc/localtime
@@ -105,13 +107,14 @@ hwclock —s -u
 
  _______________
 | Root password |
- ---------------
+|_______________|
 
 passwd
 
  ______
 | GRUB |
- ------
+|______|
+
 # https://serverfault.com/questions/857255/what-is-grub-install-actually-doing
 
 grub-install —-target=i386-pc -—recheck /dev/sda
@@ -126,14 +129,15 @@ umount /mnt
 reboot
  __________
 | Add User |
- ----------
+|__________|
+
 user:
-	useradd --create-home truebad0ur
-	passwd truebad0ur
-	usermod -aG wheel truebad0ur
+	useradd --create-home username
+	passwd username
+	usermod -aG wheel username
 add user to /etc/sudoers
 
-		LOGIN TO USER'S ACCOUNT
+------->         LOGIN TO YOUR USER'S ACCOUNT AND DO NEXT LINES        <-------
 
 pacman -S sudo
 sudo pacman -S xorg-server xorg-xinit xorg-apps mesa
@@ -152,26 +156,33 @@ makepkg -si
 
 yaourt -S archey3
 
-nano .bashrc  (add) archey3 (optional)
+Add printing beautiful info about system at terminal start:
+nano .bashrc
+add line at the end     ->      archey3
+
+ _______________
+| Login service |
+|_______________|
+
 sudo pacman -S slim
 sudo systemctl enable slim.service
 mv background.jpg /usr/share/slim/themes/default/
 mv panel.png /usr/share/slim/themes/default/
 mv slim.theme /usr/share/slim/themes/default/
 
-  _________________________
- | Awesome WM installation |
-  -------------------------
+ _________________________
+| Awesome WM installation |
+|_________________________|
 
 sudo pacman -S awesome
 cp /etc/X11/xinit/xinitrc ~/.xinitrc
 
 nano .xinitrc
-# comment all except of XINIT.D
+# comment all except of XINIT.D (delete/comment all lines except the line where XINIT.D is mentioned)
 (add to the end of the file) exec awesome
 (add to the end of the file) xrdb ~/.Xresources &
+(Next 3 lines are optional, if you download my archive with awesome, just copy-paste folder "awesome" from archive to ~/.config/    it will be ./config/awesome )
 mkdir -p .config/awesome
-
 cp /etc/xdg/awesome/rc.lua ~/.config/awesome
 cp -r /usr/share/awesome/* .config/awesome
 
@@ -179,32 +190,34 @@ sudo pacman -S rxvt-unicode pcmanfm
 pacman -S zlib
 pacman -Sy xorg
 
-REBOOT
+------->         REBOOT        <-------
 
 In awesome:
+(just a notion how to exit awesome wm)
 turn of wm mode (ctrl/alt + F1/F2/F3/F4/F5)
 
-# in console:
-	pacman -Sy xterm
-	pacman -S terminator (optional)
+pacman -Sy xterm
+pacman -S terminator (optional)
 sudo pacman -S ttf-dejavu ttf-liberation noto-fonts
 sudo pacman -S dolphin (optional)
 sudo pacman -S exfat-utils fuse-exfat (optional)
 
 # in /etc/environment should be n_US.UTF-8
 
+(optional)
  _____________
 | Virtual Box |
- -------------
+|_____________|
 
 sudo pacman -S virtualbox
 sudo modprobe -a vboxdrv
 sudo echo vboxdrv > /etc/modules-load.d/virtualbox.conf
 sudo gpasswd -a $USER vboxusers
 
+(optional)
  _______
 | Audio |
- -------
+|_______|
 
 pacman -S pulseaudio 
 pacman -S pulseaudio-alsa 
@@ -212,8 +225,9 @@ pacman -S pulseaudio-alsa
 pulseaudio --start 
 pavucontrol
 
-
-blackarch: (optional)
+ __________________________________________
+|__________BLACKARCH INSTALLATION__________|
+|__________________________________________|
 
 sudo pacman -Syyu
 curl -O https://blackarch.org/strap.sh > strap.sh
@@ -228,9 +242,10 @@ sudo pacman -Sg | grep blackarch
 pack of programs - sudo pacman -S blackarch-cracker
 https://www.ostechnix.com/install-blackarch-linux-arch-linux/
 
+(optional)
  _____________________
 | Some useful scripts |
- ---------------------
+|_____________________|
 
 # Unmount usb
 
@@ -261,8 +276,53 @@ sudo iwlist wlp3s0 scan | grep ESSID
 
 # Already known wifi connection
 
-alias orex='sudo netctl NAMEOFYOURNETWORK'
+alias COMMAND='sudo netctl NAMEOFYOURNETWORK'
 
 # Info about system
 
 archey3
+
+ ________________
+| THINGS TO KNOW |
+|________________|
+
+to open anything click right button (Lol arch is to hard, s0rry), will be opened awesome wm panel
+
+nm-connection-editor - create new connection, firstly, you need to enable and start NetworkManager
+to do so: systemctl enable NetworkManager
+	  systemctl start NetworkManager
+
+create desktop entry (in awesome wm case you create a launcher of the app in the wm panel):
+nano ~/.local/share/applications/NAMEOFAPP.desktop
+from arch wiki(write this into file):
+
+[Desktop Entry]
+# The type as listed above
+Type=Application
+# The version of the desktop entry specification to which this file complies
+Version=1.0
+# The name of the application
+Name=jMemorize
+# A comment which can/will be used as a tooltip
+Comment=Flash card based learning tool
+# The path to the folder in which the executable is run
+Path=/opt/jmemorise
+# The executable of the application, possibly with arguments.
+Exec=jmemorize
+# The name of the icon that will be used to display this entry
+Icon=jmemorize
+# Describes whether this application needs to be run in a terminal or not
+Terminal=false
+# Describes the categories in which this entry should be shown
+Categories=Education;Languages;Java;
+
+Basic example of such file:
+[Desktop Entry] 
+Encoding=UTF-8 
+Version=1.0 
+Type=Application 
+NoDisplay=false 
+Exec=/path/to/eclipse/APP 
+Name=APP Comment=Launcher for APP
+
+Repositories folder -> /etc/pacman.conf
